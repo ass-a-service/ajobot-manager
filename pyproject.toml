@@ -8,6 +8,9 @@ authors = [
     "Zymna <62969568+Zymna@users.noreply.github.com>",
 ]
 license = "MIT"
+packages = [
+    { include = "src"}
+]
 
 [tool.poetry.dependencies]
 python = "^3.10"
