@@ -1,16 +1,14 @@
 [tool.poetry]
 name = "ajobot-manager"
-version = "1.0.0"
+version = "1.0.1"
 description = "An interface for the different ajobots"
 authors = [
-    "vcokltfre <vcokltfre@gmail.com>",
     "Axel Amigo Arnold <axl89@users.noreply.github.com>",
+    "vcokltfre <vcokltfre@gmail.com>",
     "Zymna <62969568+Zymna@users.noreply.github.com>",
 ]
 license = "MIT"
-packages = [
-    { include = "src"}
-]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.10"
