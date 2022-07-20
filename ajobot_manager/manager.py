@@ -27,9 +27,6 @@ class AjoManager:
         self.redis = aioredis.from_url(f"redis://{environ['REDIS_HOST']}")
         logger.info("Connected to the database.")
 
-    def __get_seed(self) -> int:
-        return time.time_ns()-(int(time.time())*1000000000)
-
     def __translate_emoji(self, txt: str) -> str:
         match txt:
             case "chopsticks" | "🥢":
@@ -54,6 +51,10 @@ class AjoManager:
                 txt = ":tooth:"
             case "bone" | "🦴":
                 txt = ":bone:"
+            case "gear" | "⚙️":
+                txt = ":gear:"
+            case "satellite" | "📡":
+                txt = ":satellite:"
 
         return txt
 
@@ -70,6 +71,21 @@ class AjoManager:
         if res is None:
             return 0
         return int(res)
+
+    async def get_effects(self, user_id: str) -> dict:
+        curse, buff = await self.redis.mget(
+            f"{user_id}:wand-curse",
+            f"{user_id}:discombobulate-buff"
+        )
+
+        res = {}
+        if buff:
+            res["Discombobulate buff"] = buff.decode("utf-8")
+
+        if curse:
+            res["Cursed"] = curse.decode("utf-8")
+
+        return res
 
     async def get_leaderboard(self) -> dict:
         data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
@@ -96,13 +112,6 @@ class AjoManager:
         amount: str,
         guild_id: str
     ) -> str:
-        if amount.isnumeric():
-            amount = int(amount)
-        elif amount == "all":
-            amount = await self.get_ajo(user_id)
-        else:
-            amount = 0
-
         err, res = await self.redis.evalsha(
             environ["gamble"],
             2,
@@ -111,8 +120,7 @@ class AjoManager:
             user_id,
             amount,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -213,8 +221,7 @@ class AjoManager:
             to_user_id,
             amount,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         match err.decode("utf-8"):
@@ -244,7 +251,6 @@ class AjoManager:
             environ["roulette"],
             1,
             roulette_key,
-            self.__get_seed(),
             600
         )
 
@@ -419,8 +425,7 @@ class AjoManager:
             user_id,
             item,
             EVENT_VERSION,
-            guild_id,
-            self.__get_seed()
+            guild_id
         )
 
         ret = SimpleNamespace()
@@ -477,6 +482,8 @@ class AjoManager:
                 return await self.use_shoe(user_id, item, guild_id)
             case ":eggplant:":
                 return await self.use_eggplant(user_id, item, guild_id)
+            case ":satellite:":
+                return await self.use_radar(user_id, item, guild_id)
             case _:
                 return f"Unknown item {item}."
 
@@ -559,3 +566,41 @@ class AjoManager:
                 reply = f"You have crafted {item} successfully."
 
         return reply
+
+    async def use_radar(self, user_id: str, item: str, guild_id: str) -> dict | str:
+        inventory_key = f"{user_id}:inventory"
+        item_key = "items::satellite:"
+
+        err, res = await self.redis.evalsha(
+            environ["use_radar"],
+            3,
+            AJOBUS_INVENTORY,
+            inventory_key,
+            "ajocron-bomb",
+            user_id,
+            item,
+            EVENT_VERSION,
+            guild_id
+        )
+
+        if err.decode("utf-8") == "err":
+            return f"You do not have enough {item}."
+
+        if not res:
+            return f"There are no active bombs."
+
+        ids = res[::2]
+        scores = res[1::2]
+        names = await self.redis.mget(ids)
+
+        # find names related with the ids
+        j = 0
+        now = int(time.time())
+        res = {}
+        for i in range(len(names)):
+            name = names[i].decode("utf-8")
+            when = int(scores[i].decode("utf-8"))
+
+            res[f"{j} . {name[:-5]}"] = timedelta(seconds=when-now)
+
+        return res
