@@ -87,8 +87,10 @@ class AjoManager:
 
         return res
 
-    async def get_leaderboard(self) -> dict:
-        data = await self.redis.zrange(LEADERBOARD, 0, 9, "rev", "withscores")
+    async def get_leaderboard(self, page: int = 1, items_per_page: int = 10) -> dict:
+        page_to = (page*items_per_page)-1
+        page_from = page_to-9
+        data = await self.redis.zrange(LEADERBOARD, page_from, page_to, "rev", "withscores")
 
         ids = []
         scores = []
