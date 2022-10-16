@@ -102,7 +102,12 @@ class AjoManager:
         res = {}
         i = 0
         for i in range(len(names)):
-            name = names[i].decode("utf-8")
+            # Corner case when it's None
+            # (e.g. we don't have the name of the id of the user)
+            if not names[i]:
+                name = "Unknown player"
+            else:
+                name = names[i].decode("utf-8")
             res[name] = scores[i]
             i += 1
 
