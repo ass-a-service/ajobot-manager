@@ -100,7 +100,6 @@ class AjoManager:
 
         names = await self.redis.mget(ids)
         res = {}
-        i = 0
         for i in range(len(names)):
             # Corner case when it's None
             # (e.g. we don't have the name of the id of the user)
@@ -109,7 +108,6 @@ class AjoManager:
             else:
                 name = names[i].decode("utf-8")
             res[name] = scores[i]
-            i += 1
 
         return res
 
@@ -601,13 +599,12 @@ class AjoManager:
         names = await self.redis.mget(ids)
 
         # find names related with the ids
-        j = 0
         now = int(time.time())
         res = {}
         for i in range(len(names)):
             name = names[i].decode("utf-8")
             when = int(scores[i].decode("utf-8"))
 
-            res[f"{j} . {name[:-5]}"] = timedelta(seconds=when-now)
+            res[f"{i} . {name[:-5]}"] = timedelta(seconds=when-now)
 
         return res
