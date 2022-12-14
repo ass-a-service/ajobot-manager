@@ -21,6 +21,7 @@ LEADERBOARD = "lb"
 AJOBUS = "ajobus"
 AJOBUS_INVENTORY = "ajobus-inventory"
 EVENT_VERSION = 1
+IDS = "ids"
 
 class AjoManager:
     def __init__(self) -> None:
