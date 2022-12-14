@@ -72,6 +72,12 @@ class AjoManager:
             return 0
         return int(res)
 
+    async def get_id(self, user_name: str) -> str:
+        res = await self.redis.hget(IDS, user_name)
+        if res is None:
+            return ''
+        return res.decode("utf-8")
+
     async def get_effects(self, user_id: str) -> dict:
         curse, buff = await self.redis.mget(
             f"{user_id}:wand-curse",
