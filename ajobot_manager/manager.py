@@ -111,7 +111,7 @@ class AjoManager:
             # Corner case when it's None
             # (e.g. we don't have the name of the id of the user)
             if not names[i]:
-                name = "Unknown player"
+                name = f"Unknown player ({ids[i][-4:]})"
             else:
                 name = names[i].decode("utf-8")
             res[name] = scores[i]
