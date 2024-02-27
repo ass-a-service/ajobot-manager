@@ -80,17 +80,21 @@ class AjoManager:
         return res.decode("utf-8")
 
     async def get_effects(self, user_id: str) -> dict:
-        curse, buff = await self.redis.mget(
+        wand_curse, discombobulate_buff, shoe_buff = await self.redis.mget(
             f"{user_id}:wand-curse",
-            f"{user_id}:discombobulate-buff"
+            f"{user_id}:discombobulate-buff",
+            f"{user_id}:ajo-gain"
         )
 
         res = {}
-        if buff:
-            res["Discombobulate buff"] = buff.decode("utf-8")
+        if discombobulate_buff:
+            res["Discombobulate buff"] = discombobulate_buff.decode("utf-8")
 
-        if curse:
-            res["Cursed"] = curse.decode("utf-8")
+        if wand_curse:
+            res["Cursed"] = wand_curse.decode("utf-8")
+
+        if shoe_buff:
+            res["Shoe buff"] = shoe_buff.decode("utf-8")
 
         return res
 
