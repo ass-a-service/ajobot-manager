@@ -5,7 +5,7 @@ import secrets
 from types import SimpleNamespace
 
 from loguru import logger
-import aioredis
+from redis import asyncio as aioredis
 
 AJO = "🧄"
 CRUZ = '✝️'
